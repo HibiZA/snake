@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -32,12 +33,23 @@ class _MyHomePageState extends State<MyHomePage> {
     food = randomNumber.nextInt(700);
   }
 
-  void startGame() {}
+  void startGame() {
+    snakePosition = [45, 65, 85, 105, 125];
+    const duration = const Duration(milliseconds: 300);
+    Timer.periodic(duration, (Timer timer) {
+      updateSnake();
+      if (gameOver()) {
+        timer.cancel();
+        _showGameOverScreen();
+      }
+    });
+  }
+
   void updateSnake() {
     setState(() {
       switch (direction) {
         case 'down':
-          if (snakePosition.last > 700) {
+          if (snakePosition.last > 740) {
             snakePosition.add(snakePosition.last + 20 - 760);
           } else {
             snakePosition.add(snakePosition.last + 20);
@@ -45,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
           break;
 
         case 'up':
-          if (snakePosition.last > 20) {
+          if (snakePosition.last < 20) {
             snakePosition.add(snakePosition.last - 20 + 760);
           } else {
             snakePosition.add(snakePosition.last - 20);
@@ -78,6 +90,41 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  bool gameOver() {
+    for (int i = 0; i < snakePosition.length; i++) {
+      int count = 0;
+      for (int j = 0; j < snakePosition.length; j++) {
+        if (snakePosition[i] == snakePosition[j]) {
+          count += 1;
+        }
+        if (count == 2) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  void _showGameOverScreen() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Game Over"),
+            content: Text("You're Score: " + snakePosition.length.toString()),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Play Again"),
+                onPressed: () {
+                  startGame();
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onHorizontalDragUpdate: (details) {
               if (direction != "left" && details.delta.dx > 0) {
                 direction = 'right';
-              } else if (direction != 'right' && details.delta.dx > 0) {
+              } else if (direction != 'right' && details.delta.dx < 0) {
                 direction = 'left';
               }
             },
@@ -150,6 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               GestureDetector(
+                onTap: startGame,
                 child: Text(
                   "S t a r t",
                   style: TextStyle(color: Colors.white, fontSize: 20),
