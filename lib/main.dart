@@ -28,6 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int numberOfSquaresn = 760;
   static var randomNumber = Random();
   int food = randomNumber.nextInt(700);
+  bool stopped = false;
   var direction = 'down';
   void generateFood() {
     food = randomNumber.nextInt(700);
@@ -38,11 +39,16 @@ class _MyHomePageState extends State<MyHomePage> {
     const duration = const Duration(milliseconds: 300);
     Timer.periodic(duration, (Timer timer) {
       updateSnake();
-      if (gameOver()) {
+      if (gameOver() || stopped) {
         timer.cancel();
         _showGameOverScreen();
+        stopped = false;
       }
     });
+  }
+
+  void stopGame() {
+    stopped = true;
   }
 
   void updateSnake() {
@@ -200,6 +206,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 onTap: startGame,
                 child: Text(
                   "S t a r t",
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+              ),
+              GestureDetector(
+                onTap: stopGame,
+                child: Text(
+                  "S t o p",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
               )
